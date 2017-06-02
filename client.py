@@ -1,10 +1,11 @@
-from urllib2 import Request, urlopen, URLError
+import urllib2
+import json
 
-request = Request('http://everythingeverytime.herokuapp.com/poem')
+url = 'http://everythingeverytime.herokuapp.com/poem'
 
-try:
-	response = urlopen(request)
-	poem = response.read()
-	print poem
-except URLError, e:
-    print 'Whoops. Got an error code:', e
+httpreq = urllib2.urlopen(url)
+response = httpreq.read()
+poem = json.loads(response)
+
+for i in poem['poem']:
+    print i
