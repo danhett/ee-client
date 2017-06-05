@@ -18,14 +18,16 @@ from urllib import quote
 # settings
 isLocal = True  # sets localhost/remote
 poemRequestTime = 5 # number of seconds between poem requests
-remoteurl = 'http://everythingeverytime.herokuapp.com/poem'
-testurl = 'http://localhost:8080/poem'
+lineDisplayTime = 2 # number of seconds between line display updates
+remote_url = 'http://everythingeverytime.herokuapp.com/poem'
+test_url = 'http://localhost:8080/poem'
+sign_url = 'http://192.168.125.47/small/2/2/'
 
 # setup
 if isLocal:
-    url = testurl
+    url = test_url
 else:
-    url = remoteurl
+    url = remote_url
 
 
 # create scheduler
@@ -39,16 +41,23 @@ def getPoem(sc):
     response = httpreq.read()
     poem = json.loads(response)
 
-    line = quote(poem["poem"][0], safe='')
-    print "Sending line: " + line
+    printLines(poem['poem'])
 
     s.enter(poemRequestTime, 1, getPoem, (sc,))
+
+# Processes each poem line on a delay
+def printLines(poem):
+    for i in poem:
+        time.sleep(lineDisplayTime)
+        sendLineToSign(quote(i, safe=''))
+
+# Sends a single line to the sign
+def sendLineToSign(line):
+    print line
+    #sendURL = sign_url + line
+    #signReq = urllib2.urlopen(sendURL)
+    #signReq.read()
 
 # Start the scheduler
 s.enter(poemRequestTime, 1, getPoem, (s,))
 s.run()
-
-# TODO - this will output to the signs
-#sendURL = 'http://192.168.125.47/small/2/2/' + line
-#signReq = urllib2.urlopen(sendURL)
-#signReq.read()
