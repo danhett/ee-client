@@ -2,9 +2,16 @@ import urllib2
 import json
 from urllib import quote
 
-print "Getting poem..."
+# Set this to use localhost
+isLocal = True
 
-url = 'http://everythingeverytime.herokuapp.com/poem'
+remoteurl = 'http://everythingeverytime.herokuapp.com/poem'
+testurl = 'http://localhost:8080/poem'
+
+if isLocal:
+    url = testurl
+else:
+    url = remoteurl
 
 httpreq = urllib2.urlopen(url)
 response = httpreq.read()
