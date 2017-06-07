@@ -16,12 +16,12 @@ import sched
 from urllib import quote
 
 # settings
-isLocal = True  # sets localhost/remote
-poemRequestTime = 5 # number of seconds between poem requests
-lineDisplayTime = 2 # number of seconds between line display updates
+isLocal = False  # sets localhost/remote
+poemRequestTime = 60 # number of seconds between poem requests
+lineDisplayTime = 5 # number of seconds between line display updates
 remote_url = 'http://everythingeverytime.herokuapp.com/poem'
 test_url = 'http://localhost:8080/poem'
-sign_url = 'http://192.168.125.47/small/2/2/'
+sign_url = 'http://192.168.1.115/small/2/2/'
 
 # setup
 if isLocal:
@@ -54,9 +54,9 @@ def printLines(poem):
 # Sends a single line to the sign
 def sendLineToSign(line):
     print line
-    #sendURL = sign_url + line
-    #signReq = urllib2.urlopen(sendURL)
-    #signReq.read()
+    sendURL = sign_url + line
+    signReq = urllib2.urlopen(sendURL)
+    signReq.read()
 
 # Start the scheduler
 s.enter(poemRequestTime, 1, getPoem, (s,))
