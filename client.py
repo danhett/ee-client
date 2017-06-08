@@ -15,6 +15,7 @@ import time
 import sched
 from urllib import quote
 from itertools import count, groupby
+import math
 
 # settings
 isLocal = False  # sets localhost/remote
@@ -58,16 +59,20 @@ def sendLineToSign(line):
     line1 = ""
     line2 = ""
 
-    halves = split_lines(line)
+    counts = len(line.lower().split())
+    halfCounts = math.ceil((counts+1)/2)
+    print counts
+    print halfCounts
+    print "------"
+
+    halves = split_lines(line, halfCounts)
+
     line1 = quote(halves[0])
 
     if len(halves) > 1:
         line2 = quote(halves[1], safe='')
     else:
         line2 = quote(" ", safe='')
-
-    #print line1
-    #print line2
 
     sendURL = sign_url + line1 + "/" + line2
     signReq = urllib2.urlopen(sendURL)
