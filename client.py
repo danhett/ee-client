@@ -19,11 +19,12 @@ import math
 
 # settings
 isLocal = False  # sets localhost/remote
-poemRequestTime = 2 # number of seconds between poem requests
+poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
 remote_url = 'http://everythingeverytime.herokuapp.com/poem'
 test_url = 'http://localhost:8080/poem'
 sign_url = 'http://192.168.1.115/naho/0/0/'
+clear_url = 'http://192.168.1.115/clear'
 
 # setup
 if isLocal:
@@ -43,6 +44,9 @@ def getPoem(sc):
     response = httpreq.read()
     poem = json.loads(response)
 
+    print "Got live poem:"
+    print poem
+
     printLines(poem['poem'])
 
     s.enter(poemRequestTime, 1, getPoem, (sc,))
@@ -54,16 +58,20 @@ def printLines(poem):
         #sendLineToSign(quote(i, safe=''))
         sendLineToSign(i)
 
+    # now the poem is finshed, erase the display until the next cycle
+    time.sleep(lineDisplayTime)
+    clearReq = urllib2.urlopen(clear_url)
+    clearReq.read()
+
 # Sends a single line to the sign
 def sendLineToSign(line):
     line1 = ""
     line2 = ""
 
+    print "Sending line:" + line
+
     counts = len(line.lower().split())
     halfCounts = math.ceil((counts+1)/2)
-    print counts
-    print halfCounts
-    print "------"
 
     halves = split_lines(line, halfCounts)
 
