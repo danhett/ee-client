@@ -23,8 +23,8 @@ poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
 remote_url = 'http://everythingeverytime.herokuapp.com/poem'
 test_url = 'http://localhost:8080/poem'
-sign_url = 'http://192.168.1.115/naho/0/0/'
-clear_url = 'http://192.168.1.115/clear'
+sign_url = 'http://192.168.1.125/naho/0/0/'
+clear_url = 'http://192.168.1.125/clear'
 
 # setup
 if isLocal:
