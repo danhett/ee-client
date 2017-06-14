@@ -24,8 +24,8 @@ lineDisplayTime = 5 # number of seconds between line display updates
 remote_url = 'http://everythingeverytime.herokuapp.com/poem'
 test_url = 'http://localhost:8080/poem'
 url_root = 'http://192.168.1.125' # location of the Flask API
-sign_url_one_line = url_root + '/naho/0/0/'
-sign_url_two_line = url_root + '/nahosingle/'
+sign_url_two_line = url_root + '/naho/0/0/'
+sign_url_one_line = url_root + '/nahosingle/'
 clear_url = url_root + '/clear'
 
 # setup
@@ -72,8 +72,10 @@ def sendLineToSign(line):
 
     print "Sending line:" + line
 
-    if(True)
-        counts = len(line.lower().split())
+    counts = len(line.lower().split())
+
+    # if long sentence, split over two lines
+    if(counts > 4):
         halfCounts = math.ceil((counts+1)/2)
 
         halves = split_lines(line, halfCounts)
@@ -86,8 +88,10 @@ def sendLineToSign(line):
             line2 = quote(" ", safe='')
 
         sendURL = sign_url_two_line + line1 + "/" + line2
-    else
-
+    
+    # else put on a single line
+    else:
+	sendURL = sign_url_one_line + quote(line, safe='')
 
     signReq = urllib2.urlopen(sendURL)
     signReq.read()
