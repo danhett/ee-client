@@ -23,8 +23,10 @@ poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
 remote_url = 'http://everythingeverytime.herokuapp.com/poem'
 test_url = 'http://localhost:8080/poem'
-sign_url = 'http://192.168.1.125/naho/0/0/'
-clear_url = 'http://192.168.1.125/clear'
+url_root = 'http://192.168.1.125' # location of the Flask API
+sign_url_one_line = url_root + '/naho/0/0/'
+sign_url_two_line = url_root + '/nahosingle/'
+clear_url = url_root + '/clear'
 
 # setup
 if isLocal:
@@ -70,19 +72,23 @@ def sendLineToSign(line):
 
     print "Sending line:" + line
 
-    counts = len(line.lower().split())
-    halfCounts = math.ceil((counts+1)/2)
+    if(True)
+        counts = len(line.lower().split())
+        halfCounts = math.ceil((counts+1)/2)
 
-    halves = split_lines(line, halfCounts)
+        halves = split_lines(line, halfCounts)
 
-    line1 = quote(halves[0])
+        line1 = quote(halves[0])
 
-    if len(halves) > 1:
-        line2 = quote(halves[1], safe='')
-    else:
-        line2 = quote(" ", safe='')
+        if len(halves) > 1:
+            line2 = quote(halves[1], safe='')
+        else:
+            line2 = quote(" ", safe='')
 
-    sendURL = sign_url + line1 + "/" + line2
+        sendURL = sign_url_two_line + line1 + "/" + line2
+    else
+
+
     signReq = urllib2.urlopen(sendURL)
     signReq.read()
 
