@@ -9,11 +9,12 @@ This is a small python script designed to manage the signs for Naho Matsuda's
 timed queries to the API to grab poems, and then outputs the lines to the
 displays, timed appropriately to work correctly with the hardware.
 """
-import urllib2
 import json
 import time
 import sched
 from urllib import quote
+from urllib2 import urlopen
+from urlparse import urljoin
 from itertools import count, groupby
 from dotenv import load_dotenv, find_dotenv
 import math
@@ -25,11 +26,11 @@ load_dotenv(find_dotenv()) # load variables from .env file
 # settings
 poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
+displayWidth = 20 # width of display in chars
 url = os.environ.get('API_URL')
-url_root = 'http://127.0.0.1' # location of the Flask API (localhost)
-sign_url_two_line = url_root + '/naho/0/0/'
-sign_url_one_line = url_root + '/nahosingle/'
+url_root = 'http://127.0.0.1:8000' # location of the Flask API (localhost)
 clear_url = url_root + '/clear'
+naho_url = url_root + '/naho'
 pidfile_location = os.environ.get('PIDFILE_LOCATION')
 
 # write pid to a file
@@ -71,44 +72,33 @@ def printLines(poem):
 
     # now the poem is finshed, erase the display until the next cycle
     time.sleep(lineDisplayTime)
-    clearReq = urllib2.urlopen(clear_url)
-    clearReq.read()
+    urlopen(clear_url).read()
 
 # Sends a single line to the sign
 def sendLineToSign(line):
-    line1 = ""
-    line2 = ""
+    print "Sending line: {}".format(line)
 
-    print "Sending line:" + line
+    line_one = ''
+    line_two = ''
+    char_count = len(line.lower())
 
-    counts = len(line.lower().split())
-
-    # if long sentence, split over two lines
-    if(counts > 4):
-        halfCounts = math.ceil((counts+1)/2)
-
-        halves = split_lines(line, halfCounts)
-
-        line1 = quote(halves[0])
-
-        if len(halves) > 1:
-            line2 = quote(halves[1], safe='')
-        else:
-            line2 = quote(" ", safe='')
-
-        sendURL = sign_url_two_line + line1 + "/" + line2
-
-    # else put on a single line
+    if char_count <= displayWidth:
+        line_one = line
     else:
-	sendURL = sign_url_one_line + quote(line, safe='')
+        # count the words in the first half of the line then split on this
+        top_line_count = len(line[:char_count/2].strip().split())
+        words = line.strip().split()
+        line_one = ' '.join(words[:top_line_count])
+        line_two = ' '.join(words[top_line_count-len(words):])
 
-    signReq = urllib2.urlopen(sendURL)
-    signReq.read()
+    url = urljoin(naho_url, quote(line_one, safe=''))
+    if line_two:
+        url = urljoin(url, quote(line_two, safe=''))
 
-def split_lines(sentence, step=4):
-    c = count()
-    chunks = sentence.split()
-    return [' '.join(g) for k, g in groupby(chunks, lambda i: c.next() // step)]
+    try:
+        urlopen(url).read()
+    except Exception as e:
+        print e
 
 # Start the scheduler
 s.enter(poemRequestTime, 1, getPoem, (s,))
