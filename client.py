@@ -29,6 +29,13 @@ url_root = 'http://127.0.0.1' # location of the Flask API (localhost)
 sign_url_two_line = url_root + '/naho/0/0/'
 sign_url_one_line = url_root + '/nahosingle/'
 clear_url = url_root + '/clear'
+pidfile_location = os.environ.get('PIDFILE_LOCATION')
+
+# write pid to a file
+pid = str(os.getpid())
+f = open(pidfile_location, 'w')
+f.write(pid)
+f.close()
 
 # create scheduler
 s = sched.scheduler(time.time, time.sleep)
