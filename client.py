@@ -15,25 +15,20 @@ import time
 import sched
 from urllib import quote
 from itertools import count, groupby
+from dotenv import load_dotenv, find_dotenv
 import math
+import os
+
+load_dotenv(find_dotenv()) # load variables from .env file
 
 # settings
-isLocal = False  # sets localhost/remote
 poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
-remote_url = 'http://everythingeverytime.herokuapp.com/poem'
-test_url = 'http://localhost:8080/poem'
-url_root = 'http://192.168.1.125' # location of the Flask API
+url = os.environ.get('API_URL')
+url_root = 'http://127.0.0.1' # location of the Flask API (localhost)
 sign_url_two_line = url_root + '/naho/0/0/'
 sign_url_one_line = url_root + '/nahosingle/'
 clear_url = url_root + '/clear'
-
-# setup
-if isLocal:
-    url = test_url
-else:
-    url = remote_url
-
 
 # create scheduler
 s = sched.scheduler(time.time, time.sleep)
@@ -88,7 +83,7 @@ def sendLineToSign(line):
             line2 = quote(" ", safe='')
 
         sendURL = sign_url_two_line + line1 + "/" + line2
-    
+
     # else put on a single line
     else:
 	sendURL = sign_url_one_line + quote(line, safe='')
