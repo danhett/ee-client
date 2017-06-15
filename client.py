@@ -18,6 +18,7 @@ from itertools import count, groupby
 from dotenv import load_dotenv, find_dotenv
 import math
 import os
+import random
 
 load_dotenv(find_dotenv()) # load variables from .env file
 
@@ -44,12 +45,18 @@ s = sched.scheduler(time.time, time.sleep)
 def getPoem(sc):
     print "Getting poem..."
 
-    httpreq = urllib2.urlopen(url)
-    response = httpreq.read()
-    poem = json.loads(response)
-
-    print "Got live poem:"
-    print poem
+    poem = ''
+    try:
+        response = urlopen(url).read()
+        poem = json.loads(response)
+        print "Got live poem: {}".format(poem)
+    except Exception as e:
+        print "Arg fale: {}".format(e)
+        poems = ''
+        with open('poems.json') as data:
+            poems = json.load(data)
+        poem = random.choice(poems)
+        print "Got backup poem: {}".format(poem)
 
     printLines(poem['poem'])
 
