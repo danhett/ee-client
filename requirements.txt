@@ -1,2 +1,4 @@
 python-dotenv==0.6.4
 daemonize=2.4.7
+raven==6.1.0
+raven[flask]

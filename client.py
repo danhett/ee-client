@@ -18,6 +18,7 @@ from urlparse import urljoin
 from itertools import count, groupby
 from dotenv import load_dotenv, find_dotenv
 from daemonize import Daemonize
+from raven import Client
 import math
 import os
 import random
@@ -37,6 +38,9 @@ pid = os.environ.get('PIDFILE_LOCATION')
 # create scheduler
 s = sched.scheduler(time.time, time.sleep)
 
+# create an error tracker
+sentry_client = Client()
+
 # makes the poem request
 def getPoem(sc):
     print "Getting poem..."
@@ -47,7 +51,7 @@ def getPoem(sc):
         poem = json.loads(response)
         print "Got live poem: {}".format(poem)
     except Exception as e:
-        print "Arg fale: {}".format(e)
+        sentry_client.captureException()
         poems = ''
         with open('poems.json') as data:
             poems = json.load(data)
@@ -93,13 +97,16 @@ def sendLineToSign(line):
     try:
         print(url)
         urlopen(url).read()
-    except Exception as e:
-        print e
+    except Exception:
+        sentry_client.captureException()
 
 # Start the scheduler
 def startScheduler():
     s.enter(poemRequestTime, 1, getPoem, (s,))
     s.run()
 
-daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
-daemon.start()
+try:
+    daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
+    daemon.start()
+except Exception:
+    sentry_client.captureException()
