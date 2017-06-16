@@ -26,11 +26,11 @@ load_dotenv(find_dotenv()) # load variables from .env file
 # settings
 poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
-displayWidth = 20 # width of display in chars
+displayWidth = 14 # width of display in chars
 url = os.environ.get('API_URL')
 url_root = 'http://127.0.0.1:8000' # location of the Flask API (localhost)
 clear_url = url_root + '/clear'
-naho_url = url_root + '/naho'
+naho_url = url_root + '/naho/'
 pidfile_location = os.environ.get('PIDFILE_LOCATION')
 
 # write pid to a file
@@ -93,9 +93,10 @@ def sendLineToSign(line):
 
     url = urljoin(naho_url, quote(line_one, safe=''))
     if line_two:
-        url = urljoin(url, quote(line_two, safe=''))
+        url = urljoin(url+'/', quote(line_two, safe=''))
 
     try:
+        print(url)
         urlopen(url).read()
     except Exception as e:
         print e
