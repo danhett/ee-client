@@ -17,6 +17,7 @@ from urllib2 import urlopen
 from urlparse import urljoin
 from itertools import count, groupby
 from dotenv import load_dotenv, find_dotenv
+from daemonize import Daemonize
 import math
 import os
 import random
@@ -26,18 +27,12 @@ load_dotenv(find_dotenv()) # load variables from .env file
 # settings
 poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
-displayWidth = 14 # width of display in chars
+displayWidth = 15 # width of display in chars
 url = os.environ.get('API_URL')
 url_root = 'http://127.0.0.1:8000' # location of the Flask API (localhost)
 clear_url = url_root + '/clear'
 naho_url = url_root + '/naho/'
-pidfile_location = os.environ.get('PIDFILE_LOCATION')
-
-# write pid to a file
-pid = str(os.getpid())
-f = open(pidfile_location, 'w')
-f.write(pid)
-f.close()
+pid = os.environ.get('PIDFILE_LOCATION')
 
 # create scheduler
 s = sched.scheduler(time.time, time.sleep)
@@ -102,5 +97,9 @@ def sendLineToSign(line):
         print e
 
 # Start the scheduler
-s.enter(poemRequestTime, 1, getPoem, (s,))
-s.run()
+def startScheduler():
+    s.enter(poemRequestTime, 1, getPoem, (s,))
+    s.run()
+
+daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
+daemon.start()
