@@ -14,7 +14,7 @@ import time
 import sched
 from urllib import quote
 from urllib2 import urlopen
-from urlparse import urljoin
+from furl import furl
 from itertools import count, groupby
 from dotenv import load_dotenv, find_dotenv
 from daemonize import Daemonize
@@ -32,8 +32,8 @@ displayWidth = 15 # width of display in chars
 url = os.environ.get('API_URL')
 url_root = 'http://127.0.0.1:8000' # location of the Flask API (localhost)
 clear_url = url_root + '/clear'
-naho_url = url_root + '/naho/'
 pid = os.environ.get('PIDFILE_LOCATION')
+location = os.environ.get('LOCATION')
 
 # create scheduler
 s = sched.scheduler(time.time, time.sleep)
@@ -90,13 +90,19 @@ def sendLineToSign(line):
         line_one = ' '.join(words[:top_line_count])
         line_two = ' '.join(words[top_line_count-len(words):])
 
-    url = urljoin(naho_url, quote(line_one, safe=''))
-    if line_two:
-        url = urljoin(url+'/', quote(line_two, safe=''))
+        # sometimes this pushes the top line over the display width so...
+        if (len(line_one) > displayWidth):
+            line_two.unshift(line_one.pop())
+
+    # build our url
+    u = furl(url_root)
+    u.path.segments = ['naho', line_one]
+    if line_two: u.path.segments.append(line_two)
+    u.args = {'location': location}
 
     try:
-        print(url)
-        urlopen(url).read()
+        print(u.url)
+        urlopen(u.url).read()
     except Exception:
         sentry_client.captureException()
 
@@ -108,5 +114,6 @@ def startScheduler():
 try:
     daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
     daemon.start()
+    # startScheduler()
 except Exception:
     sentry_client.captureException()
