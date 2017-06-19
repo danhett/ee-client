@@ -71,7 +71,7 @@ def printLines(poem):
 
     # now the poem is finshed, erase the display until the next cycle
     time.sleep(lineDisplayTime)
-    urlopen(clear_url).read()
+    callFlippy(clear_url)
 
 # Sends a single line to the sign
 def sendLineToSign(line):
@@ -87,12 +87,15 @@ def sendLineToSign(line):
         # count the words in the first half of the line then split on this
         top_line_count = len(line[:char_count/2].strip().split())
         words = line.strip().split()
-        line_one = ' '.join(words[:top_line_count])
-        line_two = ' '.join(words[top_line_count-len(words):])
+        line_one_words = words[:top_line_count]
+        line_two_words = words[top_line_count-len(words):]
 
-        # sometimes this pushes the top line over the display width so...
-        if (len(line_one) > displayWidth):
-            line_two.unshift(line_one.pop())
+        # sometimes the top line is still over the display width so...
+        if (len(' '.join(line_one_words)) > displayWidth):
+            line_two_words = [line_one_words.pop()] + line_two_words
+
+        line_one = ' '.join(line_one_words)
+        line_two = ' '.join(line_two_words)
 
     # build our url
     u = furl(url_root)
@@ -100,9 +103,11 @@ def sendLineToSign(line):
     if line_two: u.path.segments.append(line_two)
     u.args = {'location': location}
 
+    callFlippy(u.url)
+
+def callFlippy(url):
     try:
-        print(u.url)
-        urlopen(u.url).read()
+        urlopen(url).read()
     except Exception:
         sentry_client.captureException()
 
