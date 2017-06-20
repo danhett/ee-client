@@ -47,7 +47,7 @@ def getPoem(sc):
 
     poem = ''
     try:
-        response = urlopen(url).read()
+        response = urlopen(url, timeout=10).read()
         poem = json.loads(response)
         print "Got live poem: {}".format(poem)
     except Exception as e:
@@ -107,7 +107,7 @@ def sendLineToSign(line):
 
 def callFlippy(url):
     try:
-        urlopen(url).read()
+        urlopen(url, timeout=10).read()
     except Exception:
         sentry_client.captureException()
 
