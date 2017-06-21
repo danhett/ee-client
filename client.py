@@ -29,7 +29,7 @@ load_dotenv(find_dotenv()) # load variables from .env file
 poemRequestTime = 10 # number of seconds between poem requests
 lineDisplayTime = 5 # number of seconds between line display updates
 displayWidth = 15 # width of display in chars
-url = os.environ.get('API_URL')
+api_url = os.environ.get('API_URL')
 url_root = 'http://127.0.0.1:8000' # location of the Flask API (localhost)
 clear_url = url_root + '/clear'
 pid = os.environ.get('PIDFILE_LOCATION')
@@ -43,11 +43,12 @@ sentry_client = Client()
 
 # makes the poem request
 def getPoem(sc):
-    print "Getting poem..."
-
     poem = ''
     try:
-        response = urlopen(url, timeout=10).read()
+        u = furl(api_url)
+        u.args = {'location': location}
+        print "Getting poem from {}.".format(u.url)
+        response = urlopen(u.url, timeout=10).read()
         poem = json.loads(response)
         print "Got live poem: {}".format(poem)
     except Exception as e:
@@ -101,7 +102,6 @@ def sendLineToSign(line):
     u = furl(url_root)
     u.path.segments = ['naho', line_one]
     if line_two: u.path.segments.append(line_two)
-    u.args = {'location': location}
 
     callFlippy(u.url)
 
@@ -117,8 +117,8 @@ def startScheduler():
     s.run()
 
 try:
-    daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
-    daemon.start()
-    # startScheduler()
+    # daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
+    # daemon.start()
+    startScheduler()
 except Exception:
     sentry_client.captureException()
