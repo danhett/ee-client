@@ -22,6 +22,7 @@ from raven import Client
 import math
 import os
 import random
+from __version__ import VERSION as v
 
 load_dotenv(find_dotenv()) # load variables from .env file
 
@@ -46,12 +47,13 @@ def getPoem(sc):
     poem = ''
     try:
         u = furl(api_url)
-        u.args = {'location': location}
+        u.args = {'location': location, 'v': v}
         print "Getting poem from {}.".format(u.url)
         response = urlopen(u.url, timeout=10).read()
         poem = json.loads(response)
         print "Got live poem: {}".format(poem)
     except Exception as e:
+        print(e)
         sentry_client.captureException()
         poems = ''
         with open('poems.json') as data:
@@ -117,8 +119,8 @@ def startScheduler():
     s.run()
 
 try:
-    # daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
-    # daemon.start()
-    startScheduler()
+    daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
+    daemon.start()
+    # startScheduler()
 except Exception:
     sentry_client.captureException()
