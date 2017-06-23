@@ -3,6 +3,7 @@
 client.py
 
 @author Dan Hett (hellodanhett@gmail.com)
+@author Asa Calow (asa@madlab.org.uk)
 
 This is a small python script designed to manage the signs for Naho Matsuda's
 'every thing, every time' artwork for CityVerve. Specifically, it handles
@@ -23,6 +24,7 @@ import math
 import os
 import random
 from __version__ import VERSION as v
+import logging
 
 load_dotenv(find_dotenv()) # load variables from .env file
 
@@ -39,6 +41,14 @@ location = os.environ.get('LOCATION')
 # create scheduler
 s = sched.scheduler(time.time, time.sleep)
 
+# create a logger
+logger = logging.getLogger('root')
+# logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler('ee-client.log')
+logger.addHandler(fh)
+keep_fds = [fh.stream.fileno()] # needed for daemonize
+
 # create an error tracker
 sentry_client = Client()
 
@@ -48,18 +58,18 @@ def getPoem(sc):
     try:
         u = furl(api_url)
         u.args = {'location': location, 'v': v}
-        print "Getting poem from {}.".format(u.url)
+        logger.debug("Getting poem from {}.".format(u.url))
         response = urlopen(u.url, timeout=10).read()
         poem = json.loads(response)
-        print "Got live poem: {}".format(poem)
+        logger.debug("Got live poem: {}".format(poem))
     except Exception as e:
-        print(e)
+        logger.error(e)
         sentry_client.captureException()
         poems = ''
         with open('poems.json') as data:
             poems = json.load(data)
         poem = random.choice(poems)
-        print "Got backup poem: {}".format(poem)
+        logger.warning("Using backup poem: {}".format(poem))
 
     printLines(poem['poem'])
 
@@ -78,7 +88,7 @@ def printLines(poem):
 
 # Sends a single line to the sign
 def sendLineToSign(line):
-    print "Sending line: {}".format(line)
+    logger.debug("Sending line: {}".format(line))
 
     line_one = ''
     line_two = ''
@@ -110,16 +120,18 @@ def sendLineToSign(line):
 def callFlippy(url):
     try:
         urlopen(url, timeout=10).read()
-    except Exception:
+    except Exception as e:
+        logger.error(e)
         sentry_client.captureException()
 
 # Start the scheduler
 def startScheduler():
+    logger.info("Starting up...")
     s.enter(poemRequestTime, 1, getPoem, (s,))
     s.run()
 
 try:
-    daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler)
+    daemon = Daemonize(app="ee_client", pid=pid, action=startScheduler, keep_fds=keep_fds)
     daemon.start()
     # startScheduler()
 except Exception:
