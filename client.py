@@ -55,6 +55,9 @@ sentry_client = Client()
 # makes the poem request
 def getPoem(sc):
     poem = ''
+
+    # DISABLED FOR DEMO TESTING, FORCE JSON FALLBACK
+    '''
     try:
         u = furl(api_url)
         u.args = {'location': location, 'v': v}
@@ -65,11 +68,13 @@ def getPoem(sc):
     except Exception as e:
         logger.error(e)
         sentry_client.captureException()
+        '''
+
         poems = ''
         with open('poems.json') as data:
             poems = json.load(data)
         poem = random.choice(poems)
-        logger.warning("Using backup poem: {}".format(poem))
+        #logger.warning("Using backup poem: {}".format(poem))
 
     printLines(poem['poem'])
 
